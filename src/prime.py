@@ -5,7 +5,7 @@ from random import randint
 class Prime:
     keysize = 32 # toy example, could be larger
 
-    ''' boilerplate initialization code '''
+    ''' boilerplate '''
     def __init__(self):
         pass
 
