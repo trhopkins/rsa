@@ -2,18 +2,16 @@
 
 # Travis Hopkins and Mack Gromadski
 
-import rsa
+from rsa import RSA
 
-keyGen = rsa.RSA()
+bob = RSA()
+alice = RSA()
 
 ''' driver function '''
 def main(): # toy example, no key generation yet
-    p, q = keyGen.genPQ()
-    e, d, N = keyGen.genKeyPair(p, q); # ed = 1 mod phiN, see page 96
-    #p = 11; q = 17; N = p * q; phiN = (p - 1) * (q - 1); e = 13; d = keyGen.multInv(e, phiN)
-    msg = "Hello, world"
-    ciphertext = keyGen.encrypt(e, N, msg)
-    plaintext = keyGen.decrypt(d, N, ciphertext)
+    msg = "Hello, world!"
+    ciphertext = alice.encrypt(msg, bob.public)
+    plaintext = bob.decrypt(ciphertext)
     print(ciphertext)
     print(plaintext)
 

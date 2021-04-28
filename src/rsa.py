@@ -1,30 +1,33 @@
+#! /usr/bin/env python3
+
 # Travis Hopkins and Mack Gromadski
 
-import prime
+from prime import Prime
 from random import randint
 
 class RSA:
     ''' boilerplate '''
-    def __init__(self):
-        self.keyGen = prime.Prime()
+    def __init__(self): # TODO: extend to include optional e, d, N
+        self.keyGen = Prime()
+        self.genPQ()
+        self.genKeyPair()
 
     ''' generate two primes, basis for N, e, d, etc. '''
     def genPQ(self):
-        p, q = self.keyGen.genPrimes()
-        return p, q
+        self.p, self.q = self.keyGen.genPrimes()
 
     ''' generate private key, public key, and N '''
-    def genKeyPair(self, p, q):
-        N = p * q
-        phiN = (p - 1) * (q - 1)
+    def genKeyPair(self):
+        N = self.p * self.q
+        phiN = (self.p - 1) * (self.q - 1)
         e = randint(2, phiN)
         g = self.gcd(e, phiN)
         d = -1
         while (not self.isCoPrime(e, phiN)) or d < 1:
             e = randint(2, phiN)
             d = self.multInv(e, phiN)
-        # public key, private key. Set internal variables in __init__?
-        return e, d, N
+        self.e = e; self.d = d; self.N = N
+        self.private = (d, N); self.public = (e, N);
 
     ''' Euclid's algorithm for finding greatest common denominators '''
     def gcd(self, a, b):
@@ -36,7 +39,7 @@ class RSA:
     def isCoPrime(self, a, b):
         return self.gcd(a, b) == 1
 
-    ''' Euclid's algorithm for finding multiplicative modular inverses '''
+    ''' Euclid's algorithm for finding multiplicative inverses '''
     def multInv(self, a, b): # TODO: fix negative private key bugs
         s = 0; oldS = 1
         t = 1; oldT = 0
@@ -50,19 +53,35 @@ class RSA:
             oldS += oldT
         return oldS # rename for clarity?
 
+    ''' modular exponent function. Still slower than builtin pow :( '''
+    def expMod(self, a, b, m): # a^b mod m
+        if b == 1:
+            return a % m
+        tmp = self.expMod(a, b>>1, m)
+        tmp = (tmp * tmp) % m
+        if b & 1 == 1: # if odd shortcut
+            tmp = (tmp * a) % m
+        return tmp # see SICP page 56
+
     ''' plaintext -> ciphertext '''
-    def encrypt(self, e, N, plaintext):
+    def encrypt(self, plaintext, public=None):
+        if public == None:
+            public = self.public
         ciphertext = []
         for c in plaintext: # glorified substitution cipher; FIX
             m = ord(c)
-            ciphertext.append(str(pow(m, e, N)))
+            ciphertext.append(str(pow(m, public[0], public[1])))
+            #ciphertext.append(str(self.expMod(m, public[0], public[1])))
         return ciphertext
 
     ''' ciphertext -> plaintext '''
-    def decrypt(self, d, N, ciphertext):
+    def decrypt(self, ciphertext, private=None):
+        if private == None:
+            private = self.private
         plaintext = ""
         for block in ciphertext: # each character = block; FIX
             c = int(block)
-            plaintext += chr(pow(c, d, N))
+            plaintext += chr(pow(c, private[0], private[1]))
+            #plaintext += chr(self.expMod(c, private[0], private[1]))
         return plaintext
 
