@@ -1,13 +1,30 @@
 # Travis Hopkins and Mack Gromadski
 
 import prime
+from random import randint
 
 class RSA:
-    gen = prime.Prime()
-
     ''' boilerplate '''
     def __init__(self):
-        pass
+        self.keyGen = prime.Prime()
+
+    ''' generate two primes, basis for N, e, d, etc. '''
+    def genPQ(self):
+        p, q = self.keyGen.genPrimes()
+        return p, q
+
+    ''' generate private key, public key, and N '''
+    def genKeyPair(self, p, q):
+        N = p * q
+        phiN = (p - 1) * (q - 1)
+        e = randint(2, phiN)
+        g = self.gcd(e, phiN)
+        d = -1
+        while (not self.isCoPrime(e, phiN)) or d < 1:
+            e = randint(2, phiN)
+            d = self.multInv(e, phiN)
+        # public key, private key. Set internal variables in __init__?
+        return e, d, N
 
     ''' Euclid's algorithm for finding greatest common denominators '''
     def gcd(self, a, b):
@@ -15,8 +32,12 @@ class RSA:
             a, b = b, a % b
         return a
 
+    ''' check if numbers are relatively prime '''
+    def isCoPrime(self, a, b):
+        return self.gcd(a, b) == 1
+
     ''' Euclid's algorithm for finding multiplicative modular inverses '''
-    def multInv(self, a, b):
+    def multInv(self, a, b): # TODO: fix negative private key bugs
         s = 0; oldS = 1
         t = 1; oldT = 0
         r = b; oldR = a

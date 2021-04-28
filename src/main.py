@@ -1,26 +1,23 @@
 #! /usr/bin/env python3
 
+# Travis Hopkins and Mack Gromadski
+
 import rsa
 
-# Travis Hopkins and Mack Gromadski
+keyGen = rsa.RSA()
 
 ''' driver function '''
 def main(): # toy example, no key generation yet
-    keyGen = rsa.RSA()
-    p = 11
-    q = 17
-    N = p * q
-    phiN = (p - 1) * (q - 1)
-    e = 13
-    d = keyGen.multInv(e, phiN)
-    # ed = 1 mod phiN, see book page 96
+    p, q = keyGen.genPQ()
+    e, d, N = keyGen.genKeyPair(p, q); # ed = 1 mod phiN, see page 96
+    #p = 11; q = 17; N = p * q; phiN = (p - 1) * (q - 1); e = 13; d = keyGen.multInv(e, phiN)
     msg = "Hello, world"
     ciphertext = keyGen.encrypt(e, N, msg)
     plaintext = keyGen.decrypt(d, N, ciphertext)
     print(ciphertext)
     print(plaintext)
 
-''' boilerplate call to driver method '''
+''' boilerplate '''
 if __name__ == "__main__":
     main()
 

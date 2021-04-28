@@ -23,7 +23,7 @@ class Prime:
         return True # https://en.wikipedia.org/wiki/Primality_test
 
     ''' find a prime within a range '''
-    def genPrime(self, min, max):
+    def genPrime(self, min=2, max=2**keysize):
         n = randint(min, max)
         while not self.isPrime(n):
             n = randint(min, max)
