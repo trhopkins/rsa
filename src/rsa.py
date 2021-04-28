@@ -7,38 +7,32 @@ import prime
 
 gen = prime.Prime()
 
-''' Euclid's algorithm for finding modular inverses '''
-def euclid(a, b):
+''' Euclid's algorithm for finding multiplicative modular inverses '''
+def multInv(a, b):
     s = 0; oldS = 1
     t = 1; oldT = 0
     r = b; oldR = a
-    while r != 0: # back substitution
-        quot = oldR // r
-        oldR, r = r, oldR - quot * r
-        oldS, s = s, oldS - quot * s
-        oldT, t = t, oldT - quot * t # only does two levels?
-    return oldR, oldS, oldT # gcd, x, y
-
-''' modular inverse, correcting with additive inverse '''
-def modInv(a, b): # also by Euclid
-    gcd, x, y = euclid(a, b)
-    if x < 0: # negative residue requires modular additive inverse
-        x += b
-    return x
+    while r != 0: # back substitution, see slides
+        quotient = oldR // r
+        oldR, r = r, oldR - quotient * r
+        oldS, s = s, oldS - quotient * s
+        oldT, t = t, oldT - quotient * t
+    if oldS < 0: # additive inverse if negative
+        oldS += oldT
+    return oldS # rename for clarity?
 
 ''' plaintext -> ciphertext '''
 def encrypt(e, N, plaintext):
-    ciphertext = "" # replace with list?
-    for c in plaintext: # glorified substitution cipher; REPLACE
+    ciphertext = []
+    for c in plaintext: # glorified substitution cipher; FIX
         m = ord(c)
-        ciphertext += str(pow(m, e, N)) + " " # write yourself?
+        ciphertext.append(str(pow(m, e, N)))
     return ciphertext
 
 ''' ciphertext -> plaintext '''
 def decrypt(d, N, ciphertext):
-    plaintext = "" # replace with list?
-    blocks = ciphertext.split()
-    for block in blocks: # each number = block
+    plaintext = ""
+    for block in ciphertext: # each character = block; FIX
         c = int(block)
         plaintext += chr(pow(c, d, N))
     return plaintext
@@ -46,18 +40,19 @@ def decrypt(d, N, ciphertext):
 ''' driver function '''
 def main(): # toy example, no key generation yet
     p = 11
-    q = 13
+    q = 17
     N = p * q
     phiN = (p - 1) * (q - 1)
     e = 13
-    d = modInv(e, phiN)
+    d = multInv(e, phiN)
+    # ed = 1 mod phiN, see book page 96
     msg = "Hello, world"
     ciphertext = encrypt(e, N, msg)
     plaintext = decrypt(d, N, ciphertext)
     print(ciphertext)
     print(plaintext)
 
-''' boilerplate call to driver function '''
+''' boilerplate call to driver method '''
 if __name__ == "__main__":
     main()
 
