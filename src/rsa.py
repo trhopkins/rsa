@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-# Travis Hopkins and Mack Gromadski
+# Travis Hopkins and Mack Gromadzki
 
 from prime import Prime
 from random import randint
@@ -12,7 +12,7 @@ class RSA:
         self.genPQ()
         self.genKeyPair()
 
-    ''' generate two primes, basis for N, e, d, etc. '''
+    ''' generate two primes, basis for e, d, N, etc. '''
     def genPQ(self):
         self.p, self.q = self.keyGen.genPrimes()
 
@@ -40,7 +40,7 @@ class RSA:
         return self.gcd(a, b) == 1
 
     ''' Euclid's algorithm for finding multiplicative inverses '''
-    def multInv(self, a, b): # TODO: fix negative private key bugs
+    def multInv(self, a, b):
         s = 0; oldS = 1
         t = 1; oldT = 0
         r = b; oldR = a
@@ -54,14 +54,14 @@ class RSA:
         return oldS # rename for clarity?
 
     ''' modular exponent function. Still slower than builtin pow :( '''
-    def expMod(self, a, b, m): # a^b mod m
-        if b == 1:
-            return a % m
-        tmp = self.expMod(a, b>>1, m)
-        tmp = (tmp * tmp) % m
-        if b & 1 == 1: # if odd shortcut
-            tmp = (tmp * a) % m
-        return tmp # see SICP page 56
+    def expMod(self, b, e, m): # base^exponent mod modulus
+        if e == 1:
+            return b % m
+        x = self.expMod(b, e>>1, m)
+        x = (x * x) % m
+        if e & 1 == 1: # if odd shortcut
+            x = (x * b) % m
+        return x # see SICP page 56
 
     ''' plaintext -> ciphertext '''
     def encrypt(self, plaintext, public=None):
@@ -70,8 +70,7 @@ class RSA:
         ciphertext = []
         for c in plaintext: # glorified substitution cipher; FIX
             m = ord(c)
-            ciphertext.append(str(pow(m, public[0], public[1])))
-            #ciphertext.append(str(self.expMod(m, public[0], public[1])))
+            ciphertext.append(str(self.expMod(m, public[0], public[1])))
         return ciphertext
 
     ''' ciphertext -> plaintext '''
@@ -81,7 +80,36 @@ class RSA:
         plaintext = ""
         for block in ciphertext: # each character = block; FIX
             c = int(block)
-            plaintext += chr(pow(c, private[0], private[1]))
+            plaintext += chr(pow(c, private[0], private[1])) # faster
             #plaintext += chr(self.expMod(c, private[0], private[1]))
         return plaintext
+
+    ''' block-based encryption method '''
+    def encryptBlock(self, plaintext, public=None):
+        if public == None:
+            public = self.public
+        blob = ""
+        for char in plaintext:
+            blob += "{:0>2x}".format(ord(char))
+        ciphertext = str(self.expMod(int(blob, 16), public[0], public[1]))
+        return ciphertext
+
+    ''' block-based decryption method '''
+    def decryptBlock(self, ciphertext, private=None):
+        if private == None:
+            private = self.private
+        blob = "{:0>2x}".format(self.expMod(int(ciphertext), private[0], private[1]))
+        hex = [(blob[i:i+2]) for i in range(0, len(blob), 2)]
+        plaintext = ""
+        for char in hex:
+            plaintext += chr(int(char, 16))
+        return plaintext
+
+'''
+alice = RSA()
+message = "Hello"
+ciphertext = alice.encryptBlock(message)
+plaintext = alice.decryptBlock(ciphertext)
+print(plaintext)
+'''
 
