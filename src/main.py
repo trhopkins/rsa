@@ -44,25 +44,11 @@ def encryptFile(filename, target):
 
 ''' driver function '''
 def main(): # toy example
-    '''
-    operation = sys.argv[1]
-    target = sys.argv[2]
     Travis = getKeyPair("Travis.txt")
     Mack = getKeyPair("Mack.txt")
-    if operation == "encrypt":
-        ciphertext = Travis.encrypt(sys.argv[3:], mack.public)
-    message = sys.argv[1]
-    encryptFile(message, Travis)
-    print(decryptFile("enc.txt", Travis))
-    #cipher = Mack.encrypt("Hello, world! This is Travis Hopkins!")
-    #plain = Mack.decrypt(cipher)
-    #print(plain)
-    '''
-    Travis = getKeyPair("Travis.txt")
-    Mack = getKeyPair("Mack.txt")
-    msg = "Hello"
-    sig = Travis.encryptBlock(msg)
-    print(Travis.decryptBlock(sig))
+    msg = "Hello, world! This should be working now!"
+    sig = Travis.encrypt(msg)
+    print(Mack.decrypt(sig, Travis.private))
 
 ''' boilerplate '''
 if __name__ == "__main__":

@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # Travis Hopkins and Mack Gromadzki
 
 from prime import Prime # key generation
@@ -93,7 +91,6 @@ class RSA:
         while numPlain:
             plaintext += chr(numPlain % 128)
             numPlain >>= 7
-        #print(plaintext)
         return plaintext[::-1]
 
     ''' sign block of 8 characters '''
@@ -130,7 +127,7 @@ class RSA:
         while len(blocks[-1]) != 8:
             blocks[-1] += " " # uniform block lengths
         for block in blocks:
-            ciphertext += self.encryptBlock(block, public)
+            ciphertext += str(self.encryptBlock(block, public))
             ciphertext += "\n" # delimiter can be "\n" or " "
         return(ciphertext)
 
@@ -141,14 +138,6 @@ class RSA:
         plaintext = ""
         blocks = ciphertext.split()
         for block in blocks: # may be long message
-            plaintext += self.decryptBlock(block, private)
+            plaintext += self.decryptBlock(int(block), private)
         return plaintext
 
-alice = RSA("alice")
-msg = "Hello"
-ciphertext = alice.encryptBlock(msg)
-plaintext = alice.decryptBlock(ciphertext)
-signature = alice.signBlock(msg)
-checksig = alice.checkBlockSignature(signature)
-print(checksig)
-print(plaintext)
