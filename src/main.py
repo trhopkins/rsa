@@ -61,8 +61,8 @@ def main(): # toy example
     Travis = getKeyPair("Travis.txt")
     Mack = getKeyPair("Mack.txt")
     msg = "Hello"
-    sig = Travis.signBlock(msg)
-    print(Travis.checkBlockSignature(sig))
+    sig = Travis.encryptBlock(msg)
+    print(Travis.decryptBlock(sig))
 
 ''' boilerplate '''
 if __name__ == "__main__":

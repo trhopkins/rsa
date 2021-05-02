@@ -1,8 +1,9 @@
+#! /usr/bin/env python3
+
 # Travis Hopkins and Mack Gromadzki
 
 from prime import Prime # key generation
 from random import randint # key generation
-#import base64 # encoding to condense payloads? Currently using base16
 
 class RSA:
     ''' boilerplate '''
@@ -70,18 +71,16 @@ class RSA:
             x = (x * b) % m
         return x # see SICP page 56
 
-    ''' encrypt block of 8 characters '''
+    ''' encrypt block of 8 characters base64 '''
     def encryptBlock(self, plaintext, public=None):
         if public == None:
             public = self.public
         e, N = public[0], public[1]
-        ciphertext = ""
+        ciphertext = 0
         for char in plaintext:
-            blob = "{:0>2x}".format(ord(char))
-            if len(blob) == 1:
-                print(blob)
-            ciphertext += "{:0>2x}".format(ord(char))
-        ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), e, N))
+            ciphertext <<= 7
+            ciphertext += ord(char)
+        ciphertext = self.expMod(ciphertext, e, N)
         return ciphertext
 
     ''' decrypt block of 8 characters '''
@@ -89,50 +88,37 @@ class RSA:
         if private == None:
             private = self.private
         d, N = private[0], private[1]
-        ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), d, N))
-        hex = [(ciphertext[i:i+2]) for i in range(0, len(ciphertext), 2)]
+        numPlain = self.expMod(ciphertext, d, N)
         plaintext = ""
-        for char in hex:
-            plaintext += chr(int(char, 16))
-        return plaintext
+        while numPlain:
+            plaintext += chr(numPlain % 128)
+            numPlain >>= 7
+        #print(plaintext)
+        return plaintext[::-1]
 
-    '''
+    ''' sign block of 8 characters '''
     def signBlock(self, plaintext, private=None):
         if private == None:
             private = self.private
         d, N = private[0], private[1]
-        plaintext = "{:0>2x}".format(self.expMod(int(plaintext, 16), d, N))
-        hex = [(ciphertext[i:i+2]) for i in range(0, len(ciphertext), 2)]
-        signature = ""
-        for char in hex:
-            plaintext += chr(int(char, 16))
-        return plaintext
-    '''
-
-    def signBlock(self, plaintext, private=None):
-        if private == None:
-            private = self.private
-        d, N = private[0], private[1]
-        signature = ""
+        signature = 0
         for char in plaintext:
-            blob = "{:0>2x}".format(ord(char))
-            if len(blob) == 1:
-                print(blob)
-            signature += "{:0>2x}".format(ord(char))
-        signature = "{:0>2x}".format(self.expMod(int(signature, 16), d, N))
+            signature <<= 7
+            signature += ord(char)
+        signature = self.expMod(signature, d, N) # encrypt with public
         return signature
 
-    ''' decrypt block of 8 characters '''
+    ''' check block signature '''
     def checkBlockSignature(self, signature, public=None):
         if public == None:
             public = self.public
-        e, N = public[0], public[1]
-        signature = "{:0>2x}".format(self.expMod(int(signature, 16), e, N))
-        hex = [(signature[i:i+2]) for i in range(0, len(signature), 2)]
+        d, N = public[0], public[1]
+        numPlain = self.expMod(signature, d, N) # decrypt with private
         plaintext = ""
-        for char in hex:
-            plaintext += chr(int(char, 16))
-        return plaintext
+        while numPlain:
+            plaintext += chr(numPlain % 128)
+            numPlain >>= 7
+        return plaintext[::-1] # reversed due to the way >> works
 
     ''' encrypt message by composing into blocks '''
     def encrypt(self, plaintext, public=None):
@@ -158,3 +144,11 @@ class RSA:
             plaintext += self.decryptBlock(block, private)
         return plaintext
 
+alice = RSA("alice")
+msg = "Hello"
+ciphertext = alice.encryptBlock(msg)
+plaintext = alice.decryptBlock(ciphertext)
+signature = alice.signBlock(msg)
+checksig = alice.checkBlockSignature(signature)
+print(checksig)
+print(plaintext)
