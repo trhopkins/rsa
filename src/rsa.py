@@ -1,9 +1,8 @@
-#! /usr/bin/env python3
-
 # Travis Hopkins and Mack Gromadzki
 
-from prime import Prime
-from random import randint
+from prime import Prime # key generation
+from random import randint # key generation
+#import base64 # encoding to condense payloads? Currently using base16
 
 class RSA:
     ''' boilerplate '''
@@ -79,6 +78,8 @@ class RSA:
         ciphertext = ""
         for char in plaintext:
             blob = "{:0>2x}".format(ord(char))
+            if len(blob) == 1:
+                print(blob)
             ciphertext += "{:0>2x}".format(ord(char))
         ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), e, N))
         return ciphertext
@@ -95,9 +96,47 @@ class RSA:
             plaintext += chr(int(char, 16))
         return plaintext
 
+    '''
+    def signBlock(self, plaintext, private=None):
+        if private == None:
+            private = self.private
+        d, N = private[0], private[1]
+        plaintext = "{:0>2x}".format(self.expMod(int(plaintext, 16), d, N))
+        hex = [(ciphertext[i:i+2]) for i in range(0, len(ciphertext), 2)]
+        signature = ""
+        for char in hex:
+            plaintext += chr(int(char, 16))
+        return plaintext
+    '''
+
+    def signBlock(self, plaintext, private=None):
+        if private == None:
+            private = self.private
+        d, N = private[0], private[1]
+        signature = ""
+        for char in plaintext:
+            blob = "{:0>2x}".format(ord(char))
+            if len(blob) == 1:
+                print(blob)
+            signature += "{:0>2x}".format(ord(char))
+        signature = "{:0>2x}".format(self.expMod(int(signature, 16), d, N))
+        return signature
+
+    ''' decrypt block of 8 characters '''
+    def checkBlockSignature(self, signature, public=None):
+        if public == None:
+            public = self.public
+        e, N = public[0], public[1]
+        signature = "{:0>2x}".format(self.expMod(int(signature, 16), e, N))
+        hex = [(signature[i:i+2]) for i in range(0, len(signature), 2)]
+        plaintext = ""
+        for char in hex:
+            plaintext += chr(int(char, 16))
+        return plaintext
+
     ''' encrypt message by composing into blocks '''
     def encrypt(self, plaintext, public=None):
-        if public == None: 
+        if public == None:
             public = self.public # default to own key
         ciphertext = ""
         # thank you Automate the Boring Stuff for this bit of shorthand

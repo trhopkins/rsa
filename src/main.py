@@ -12,22 +12,22 @@ def genKeyPair(name):
     #print(user.e)
     #print(user.d)
     #print(user.N)
-    return user
+    return user # consider writing to file instead?
 
 ''' grab a keypair from a file '''
-def getKeyPair(name):
+def getKeyPair(name): # Travis.txt, Mack.txt
     keyData = ""
-    for line in fileinput.input(files = name):
+    for line in fileinput.input(files = name): # lines = numbers
         keyData += line
-    keyData = keyData.split()
-    user = RSA(name, int(keyData[0]), int(keyData[1]), int(keyData[2]))
+    e, d, N = keyData.split()
+    user = RSA(name, int(e), int(d), int(N))
     return user
 
 ''' given a file of encrypted blocks, return the plaintext '''
 def decryptFile(filename, target):
     ciphertext = ""
-    for line in fileinput.input(files = filename):
-        ciphertext += line
+    for line in fileinput.input(files = filename): # lines = blocks
+        ciphertext += str.rstrip(line)
     plaintext = target.decrypt(ciphertext)
     return plaintext
 
@@ -35,27 +35,34 @@ def decryptFile(filename, target):
 def encryptFile(filename, target):
     plaintext = ""
     for line in fileinput.input(files = filename):
-        plaintext += line
+        plaintext += str.rstrip(line)
     ciphertext = target.encrypt(plaintext)
-    return ciphertext
+    enc = open("enc.txt", "w")
+    enc.write(ciphertext)
+    enc.close()
+    #return ciphertext
 
 ''' driver function '''
 def main(): # toy example
-    #genKeyPair("Travis")
-    #genKeyPair("Mack")
+    '''
+    operation = sys.argv[1]
+    target = sys.argv[2]
     Travis = getKeyPair("Travis.txt")
     Mack = getKeyPair("Mack.txt")
-    print(Travis.e)
-    print(Travis.d)
-    print(Travis.N)
-    print()
-    print(Mack.e)
-    print(Mack.d)
-    print(Mack.N)
-    print()
-    #Mack.encryptFile("email.txt", Travis)
-    print(encryptFile("email.txt", Travis))
-    #Travis.decryptFile("Mackemail.txt")
+    if operation == "encrypt":
+        ciphertext = Travis.encrypt(sys.argv[3:], mack.public)
+    message = sys.argv[1]
+    encryptFile(message, Travis)
+    print(decryptFile("enc.txt", Travis))
+    #cipher = Mack.encrypt("Hello, world! This is Travis Hopkins!")
+    #plain = Mack.decrypt(cipher)
+    #print(plain)
+    '''
+    Travis = getKeyPair("Travis.txt")
+    Mack = getKeyPair("Mack.txt")
+    msg = "Hello"
+    sig = Travis.signBlock(msg)
+    print(Travis.checkBlockSignature(sig))
 
 ''' boilerplate '''
 if __name__ == "__main__":
