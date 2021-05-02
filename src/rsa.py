@@ -7,10 +7,18 @@ from random import randint
 
 class RSA:
     ''' boilerplate '''
-    def __init__(self): # TODO: extend to include optional e, d, N
+    def __init__(self, name, e=None, d=None, N=None):
+        self.name = name
         self.keyGen = Prime()
-        self.genPQ()
-        self.genKeyPair()
+        if e != None and d != None and N != None:
+            self.e = e
+            self.d = d
+            self.N = N
+            self.public = (self.e, self.N)
+            self.private = (self.d, self.N)
+        else:
+            self.genPQ()
+            self.genKeyPair()
 
     ''' generate two primes, basis for e, d, N, etc. '''
     def genPQ(self):
@@ -70,6 +78,7 @@ class RSA:
         e, N = public[0], public[1]
         ciphertext = ""
         for char in plaintext:
+            blob = "{:0>2x}".format(ord(char))
             ciphertext += "{:0>2x}".format(ord(char))
         ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), e, N))
         return ciphertext
@@ -109,11 +118,4 @@ class RSA:
         for block in blocks: # may be long message
             plaintext += self.decryptBlock(block, private)
         return plaintext
-
-'''
-alice = RSA()
-message = alice.encrypt("Hello, world! My name is Travis Hopkins.")
-print(message)
-print(alice.decrypt(message))
-'''
 
