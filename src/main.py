@@ -9,7 +9,7 @@ alice = RSA()
 
 ''' driver function '''
 def main(): # toy example
-    msg = "Hello"
+    msg = "Lorem ipsum dolor amset"
     ciphertext = alice.encrypt(msg, bob.public)
     plaintext = bob.decrypt(ciphertext)
     print(ciphertext)

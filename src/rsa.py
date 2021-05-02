@@ -63,53 +63,57 @@ class RSA:
             x = (x * b) % m
         return x # see SICP page 56
 
-    ''' plaintext -> ciphertext '''
-    def encrypt(self, plaintext, public=None):
-        if public == None:
-            public = self.public
-        ciphertext = []
-        for c in plaintext: # glorified substitution cipher; FIX
-            m = ord(c)
-            ciphertext.append(str(self.expMod(m, public[0], public[1])))
-        return ciphertext
-
-    ''' ciphertext -> plaintext '''
-    def decrypt(self, ciphertext, private=None):
-        if private == None:
-            private = self.private
-        plaintext = ""
-        for block in ciphertext: # each character = block; FIX
-            c = int(block)
-            plaintext += chr(pow(c, private[0], private[1])) # faster
-            #plaintext += chr(self.expMod(c, private[0], private[1]))
-        return plaintext
-
-    ''' block-based encryption method '''
+    ''' encrypt block of 8 characters '''
     def encryptBlock(self, plaintext, public=None):
         if public == None:
             public = self.public
-        blob = ""
+        e, N = public[0], public[1]
+        ciphertext = ""
         for char in plaintext:
-            blob += "{:0>2x}".format(ord(char))
-        ciphertext = str(self.expMod(int(blob, 16), public[0], public[1]))
+            ciphertext += "{:0>2x}".format(ord(char))
+        ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), e, N))
         return ciphertext
 
-    ''' block-based decryption method '''
+    ''' decrypt block of 8 characters '''
     def decryptBlock(self, ciphertext, private=None):
         if private == None:
             private = self.private
-        blob = "{:0>2x}".format(self.expMod(int(ciphertext), private[0], private[1]))
-        hex = [(blob[i:i+2]) for i in range(0, len(blob), 2)]
+        d, N = private[0], private[1]
+        ciphertext = "{:0>2x}".format(self.expMod(int(ciphertext, 16), d, N))
+        hex = [(ciphertext[i:i+2]) for i in range(0, len(ciphertext), 2)]
         plaintext = ""
         for char in hex:
             plaintext += chr(int(char, 16))
         return plaintext
 
+    ''' encrypt message by composing into blocks '''
+    def encrypt(self, plaintext, public=None):
+        if public == None: 
+            public = self.public # default to own key
+        ciphertext = ""
+        # thank you Automate the Boring Stuff for this bit of shorthand
+        blocks = [(plaintext[i:i+8]) for i in range(0, len(plaintext), 8)]
+        while len(blocks[-1]) != 8:
+            blocks[-1] += " " # uniform block lengths
+        for block in blocks:
+            ciphertext += self.encryptBlock(block, public)
+            ciphertext += "\n" # delimiter can be "\n" or " "
+        return(ciphertext)
+
+    ''' decrypt message composed of blocks '''
+    def decrypt(self, ciphertext, private=None):
+        if private == None:
+            private = self.private # default to own key
+        plaintext = ""
+        blocks = ciphertext.split()
+        for block in blocks: # may be long message
+            plaintext += self.decryptBlock(block, private)
+        return plaintext
+
 '''
 alice = RSA()
-message = "Hello"
-ciphertext = alice.encryptBlock(message)
-plaintext = alice.decryptBlock(ciphertext)
-print(plaintext)
+message = alice.encrypt("Hello, world! My name is Travis Hopkins.")
+print(message)
+print(alice.decrypt(message))
 '''
 
