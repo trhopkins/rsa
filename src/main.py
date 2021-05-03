@@ -17,30 +17,30 @@ def genKeyPair(name):
 ''' grab a keypair from a file '''
 def getKeyPair(name): # Travis.txt, Mack.txt
     keyData = ""
-    for line in fileinput.input(files = name): # lines = numbers
+    for line in fileinput.input(files=name): # lines = numbers
         keyData += line
     e, d, N = keyData.split()
     user = RSA(name, int(e), int(d), int(N))
     return user
 
-''' given a file of encrypted blocks, return the plaintext '''
-def decryptFile(filename, target):
-    ciphertext = ""
-    for line in fileinput.input(files = filename): # lines = blocks
-        ciphertext += str.rstrip(line)
-    plaintext = target.decrypt(ciphertext)
-    return plaintext
-
 ''' given a file of plaintext, return the encrypted blocks '''
 def encryptFile(filename, target):
     plaintext = ""
-    for line in fileinput.input(files = filename):
+    for line in fileinput.input(files=filename):
         plaintext += str.rstrip(line)
     ciphertext = target.encrypt(plaintext)
-    enc = open("enc.txt", "w")
-    enc.write(ciphertext)
-    enc.close()
-    #return ciphertext
+    #enc = open("enc.txt", "w")
+    #enc.write(ciphertext)
+    #enc.close()
+    return ciphertext
+
+''' given a file of encrypted blocks, return the plaintext '''
+def decryptFile(filename, target):
+    ciphertext = ""
+    for line in fileinput.input(files=filename): # lines = blocks
+        ciphertext += line
+    plaintext = target.decrypt(ciphertext)
+    return plaintext
 
 ''' driver function '''
 def main(): # toy example
@@ -49,12 +49,16 @@ def main(): # toy example
     message = " ".join(sys.argv[3:])
     if sys.argv[1] == "encrypt":
         output = target.encrypt(message)
-    if sys.argv[1] == "decrypt":
+    elif sys.argv[1] == "decrypt":
         output = target.decrypt(message)
-    if sys.argv[1] == "sign":
+    elif sys.argv[1] == "sign":
         output = target.sign(message)
-    if sys.argv[1] == "checkSignature":
+    elif sys.argv[1] == "checkSignature":
         output = target.checkSignature(message)
+    elif sys.argv[1] == "encryptFile":
+        output = encryptFile(sys.argv[3], target)
+    elif sys.argv[1] == "decryptFile":
+        output = decryptFile(sys.argv[3], target)
     print(output)
 
 ''' boilerplate '''

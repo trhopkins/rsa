@@ -79,10 +79,11 @@ class RSA:
             ciphertext <<= 7
             ciphertext += ord(char)
         ciphertext = self.expMod(ciphertext, e, N)
-        return ciphertext
+        return str(ciphertext)
 
     ''' decrypt block of 8 characters '''
     def decryptBlock(self, ciphertext, private=None):
+        ciphertext = int(ciphertext) # assume string inputs
         if private == None:
             private = self.private
         d, N = private[0], private[1]
@@ -103,10 +104,11 @@ class RSA:
             signature <<= 7
             signature += ord(char)
         signature = self.expMod(signature, d, N) # encrypt with public
-        return signature
+        return str(signature)
 
     ''' check block signature '''
     def checkBlockSignature(self, signature, public=None):
+        signature = int(signature)
         if public == None:
             public = self.public
         d, N = public[0], public[1]
@@ -127,9 +129,9 @@ class RSA:
         while len(blocks[-1]) != 8:
             blocks[-1] += " " # uniform block lengths
         for block in blocks:
-            ciphertext += str(self.encryptBlock(block, public))
+            ciphertext += self.encryptBlock(block, public)
             ciphertext += "\n" # delimiter can be "\n" or " "
-        return(ciphertext)
+        return ciphertext
 
     ''' decrypt message composed of blocks '''
     def decrypt(self, ciphertext, private=None):
@@ -138,7 +140,7 @@ class RSA:
         plaintext = ""
         blocks = ciphertext.split()
         for block in blocks: # may be long message
-            plaintext += self.decryptBlock(int(block), private)
+            plaintext += self.decryptBlock(block, private)
         return plaintext
 
     def sign(self, plaintext, private=None):
