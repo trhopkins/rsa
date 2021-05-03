@@ -1,4 +1,6 @@
+# RSA implementation
 # Travis Hopkins and Mack Gromadzki
+
 
 from prime import Prime # key generation
 from random import randint # key generation

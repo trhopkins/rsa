@@ -1,3 +1,4 @@
+# prime generator
 # Travis Hopkins and Mack Gromadzki
 
 from random import randint

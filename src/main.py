@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 # Travis Hopkins and Mack Gromadzki
+# Driver program for protocol
 
 from rsa import RSA # encryption/decryption
 import fileinput # file IO
@@ -29,7 +30,7 @@ def encryptFile(filename, target):
     for line in fileinput.input(files=filename):
         plaintext += str.rstrip(line)
     ciphertext = target.encrypt(plaintext)
-    #enc = open("enc.txt", "w")
+    #enc = open("enc.txt", "w") # if you want to write directly
     #enc.write(ciphertext)
     #enc.close()
     return ciphertext
@@ -40,6 +41,22 @@ def decryptFile(filename, target):
     for line in fileinput.input(files=filename): # lines = blocks
         ciphertext += line
     plaintext = target.decrypt(ciphertext)
+    return plaintext
+
+''' input a file and return its signature '''
+def signFile(filename, target):
+    plaintext = ""
+    for line in fileinput.input(files=filename):
+        plaintext += str.rstrip(line)
+    signature = target.sign(plaintext)
+    return signature
+
+''' given a file of encrypted blocks, return the plaintext '''
+def checkFileSignature(filename, target):
+    signature = ""
+    for line in fileinput.input(files=filename): # lines = blocks
+        signature += line
+    plaintext = target.checkSignature(signature)
     return plaintext
 
 ''' driver function '''
@@ -59,6 +76,10 @@ def main(): # toy example
         output = encryptFile(sys.argv[3], target)
     elif sys.argv[1] == "decryptFile":
         output = decryptFile(sys.argv[3], target)
+    elif sys.argv[1] == "checkFileSignature":
+        output = checkFileSignature(sys.argv[3], target)
+    elif sys.argv[1] == "signFile":
+        output = signFile(sys.argv[3], target)
     print(output)
 
 ''' boilerplate '''
