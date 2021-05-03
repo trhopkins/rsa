@@ -141,3 +141,25 @@ class RSA:
             plaintext += self.decryptBlock(int(block), private)
         return plaintext
 
+    def sign(self, plaintext, private=None):
+        if private == None:
+            private = self.private # default to own key
+        signature = ""
+        # thank you Automate the Boring Stuff for this bit of shorthand
+        blocks = [(plaintext[i:i+8]) for i in range(0, len(plaintext), 8)]
+        while len(blocks[-1]) != 8:
+            blocks[-1] += " " # uniform block lengths
+        for block in blocks:
+            signature += str(self.signBlock(block, private))
+            signature += "\n" # delimiter can be "\n" or " "
+        return(signature)
+
+    def checkSignature(self, signature, public=None):
+        if public == None:
+            public = self.public # default to own key
+        plaintext = ""
+        blocks = signature.split()
+        for block in blocks: # may be long message
+            plaintext += self.decryptBlock(int(block), public)
+        return plaintext
+
