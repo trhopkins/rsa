@@ -28,7 +28,7 @@ def getKeyPair(name): # Travis.txt, Mack.txt
 def encryptFile(filename, target):
     plaintext = ""
     for line in fileinput.input(files=filename):
-        plaintext += str.rstrip(line)
+        plaintext += line
     ciphertext = target.encrypt(plaintext)
     #enc = open("enc.txt", "w") # if you want to write directly
     #enc.write(ciphertext)
