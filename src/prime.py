@@ -4,11 +4,11 @@
 from random import randint
 
 class Prime:
-    keysize = 32 # toy example, could be larger
+    keysize = 64 / 2 # used to generate p and q which are multiplied
 
     ''' boilerplate '''
     def __init__(self):
-        pass
+        pass # only here for posterity
 
     ''' test for primes in sqrt(n)/6 time with 6k+-1 optimization '''
     def isPrime(self, n): # 100% certainty of prime/not prime
@@ -24,7 +24,6 @@ class Prime:
         return True # https://en.wikipedia.org/wiki/Primality_test
 
     ''' faster prime test, O(log(N)) complexity '''
-    # TODO: fix inputs to include n and count instead?
     def rabinMiller(self, n, d): # nondeterministic, try multiple times
         tmp = randint(2, (a - 4))
         x = pow(tmp, d, n) # faster than expMod but identical
@@ -44,7 +43,7 @@ class Prime:
     def genPrime(self, min=2**(keysize-1), max=2**keysize-1):
         n = randint(min, max)
         while not self.isPrime(n):
-            n = randint(min, max)
+            n = randint(min, max) # guess and check
         return n
 
     ''' find primes p and q in range '''
@@ -53,20 +52,6 @@ class Prime:
         while len(primes) < count:
             primes.append(self.genPrime(min, max))
         return primes
-
-    ''' modular exponentiation translated from Scheme '''
-    ''' sadly, Python lacks tail recursion so this exceeds max depth
-    def expMod(b, e, m): # base, exponent, modulus
-        if e == 1:
-            return b % m
-        elif e == 0:
-            return 1
-        else:
-            if e & 1 == 1: # odd
-                return (b * (expMod(b, e/2, m) ** 2)) % m
-            else:
-                return (expMod(b, e/2, m) ** 2) % m
-    '''
 
     ''' modular exponent function. Still slower than builtin pow '''
     def expMod(self, b, e, m): # base^exponent mod modulus

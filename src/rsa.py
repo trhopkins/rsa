@@ -45,7 +45,7 @@ class RSA:
 
     ''' check if numbers are relatively prime '''
     def isCoPrime(self, a, b):
-        return self.gcd(a, b) == 1
+        return self.gcd(a, b) == 1 # thanks Fermat
 
     ''' Euclid's algorithm for finding multiplicative inverses '''
     def multInv(self, a, b):
@@ -78,23 +78,23 @@ class RSA:
         e, N = public[0], public[1]
         ciphertext = 0
         for char in plaintext:
-            ciphertext <<= 7
-            ciphertext += ord(char)
+            ciphertext <<= 7 # 2**7 possible ASCII characters
+            ciphertext += ord(char) # each 7 bits = 1 character
         ciphertext = self.expMod(ciphertext, e, N)
         return str(ciphertext)
 
     ''' decrypt block of 8 characters '''
     def decryptBlock(self, ciphertext, private=None):
-        ciphertext = int(ciphertext) # assume string inputs
+        ciphertext = int(ciphertext)
         if private == None:
             private = self.private
         d, N = private[0], private[1]
         numPlain = self.expMod(ciphertext, d, N)
         plaintext = ""
         while numPlain:
-            plaintext += chr(numPlain % 128)
-            numPlain >>= 7
-        return plaintext[::-1]
+            plaintext += chr(numPlain % 128) # ASCII table translation
+            numPlain >>= 7 # move down stack, 7 bits at a time
+        return plaintext[::-1] # stack-based blocks output in reverse
 
     ''' sign block of 8 characters '''
     def signBlock(self, plaintext, private=None):

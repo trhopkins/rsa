@@ -10,9 +10,9 @@ import sys # command line arguments
 ''' generate a keypair for a user '''
 def genKeyPair(name):
     user = RSA(name)
-    #print(user.e)
-    #print(user.d)
-    #print(user.N)
+    print(user.e)
+    print(user.d)
+    print(user.N)
     return user # consider writing to file instead?
 
 ''' grab a keypair from a file '''
@@ -47,7 +47,7 @@ def decryptFile(filename, target):
 def signFile(filename, target):
     plaintext = ""
     for line in fileinput.input(files=filename):
-        plaintext += str.rstrip(line)
+        plaintext += line
     signature = target.sign(plaintext)
     return signature
 
@@ -61,9 +61,11 @@ def checkFileSignature(filename, target):
 
 ''' driver function '''
 def main(): # toy example
-    target = sys.argv[2] + ".txt" # whose key to use
-    target = getKeyPair(target)
-    message = " ".join(sys.argv[3:])
+    if sys.argv[1] != "genUser":
+        target = sys.argv[2] + ".txt" # whose key to use
+        target = getKeyPair(target)
+        message = " ".join(sys.argv[3:])
+    output = ""
     if sys.argv[1] == "encrypt":
         output = target.encrypt(message)
     elif sys.argv[1] == "decrypt":
@@ -80,6 +82,8 @@ def main(): # toy example
         output = checkFileSignature(sys.argv[3], target)
     elif sys.argv[1] == "signFile":
         output = signFile(sys.argv[3], target)
+    elif sys.argv[1] == "genUser":
+        user = genKeyPair(sys.argv[2])
     print(output)
 
 ''' boilerplate '''

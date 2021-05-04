@@ -13,14 +13,24 @@ class DH:
         self.p = p
         self.sharedSecret = None # g^secret mod p
 
+    ''' modular exponent function. Still slower than builtin pow :( '''
+    def expMod(self, b, e, m): # base^exponent mod modulus
+        if e == 1:
+            return b % m
+        x = self.expMod(b, e>>1, m)
+        x = (x * x) % m
+        if e & 1 == 1: # if odd shortcut
+            x = (x * b) % m
+        return x # see SICP page 56
+
     ''' g^a mod p '''
     def generatePartialSecret(self):
-        partialSecret = (self.g ** self.secret) % self.p
+        partialSecret = self.expMod(self.g, self.secret, self.p)
         return partialSecret
 
     ''' g^a mod p '''
     def generateSharedSecret(self, otherPartialKey): # g^b mod p
-        self.sharedSecret = (otherPartialKey ** self.secret) % self.p
+        self.sharedSecret = self.expMod(otherPartialKey, self.secret, self.p)
         return self.sharedSecret
 
     ''' encrypt message with fullKey '''
